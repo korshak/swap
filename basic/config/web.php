@@ -6,16 +6,23 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'modules' => [
+        'admin' => [
+            'class' => 'mdm\admin\Module'
+        ]
+    ],
     'components' => [
+        'authManager' => [
+            'class' => 'yii\rbac\DbManager',
+        ],
         'request' => [
-            // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => 'MBXQFVyusyxWUWHzGtuvNJ2IxlSoYZTs',
+            'cookieValidationKey' => 'jghdfkgjdHFKUJHF76834hfsdhGJH',
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => 'app\models\tables\User',
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
@@ -37,7 +44,24 @@ $config = [
                 ],
             ],
         ],
+        'urlManager' => [
+            'class' => 'yii\web\UrlManager',
+            'enablePrettyUrl' => true,
+            'showScriptName' => false,
+        ],
         'db' => require(__DIR__ . '/db.php'),
+    ],
+    'as access' => [
+        'class' => 'mdm\admin\components\AccessControl',
+        'allowActions' => [
+            'admin/*', // add or remove allowed actions to this list
+            'debug/*',
+            'gii/*',
+            'site/request-password-reset',
+            'site/reset-password',
+            'site/login',
+            'site/signup',
+        ]
     ],
     'params' => $params,
 ];
