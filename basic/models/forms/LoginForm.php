@@ -3,6 +3,7 @@ namespace app\models\forms;
 
 use Yii;
 use yii\base\Model;
+use app\models\tables\User;
 
 /**
  * Login form

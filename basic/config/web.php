@@ -8,7 +8,8 @@ $config = [
     'bootstrap' => ['log'],
     'modules' => [
         'admin' => [
-            'class' => 'mdm\admin\Module'
+            'class' => 'mdm\admin\Module',
+            'layout' => 'left-menu',
         ]
     ],
     'components' => [
@@ -30,9 +31,7 @@ $config = [
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
-            // send all mails to a file by default. You have to set
-            // 'useFileTransport' to false and configure a transport
-            // for the mailer to send real emails.
+            // it doesn't matter if it will write to file or actually send email, right?
             'useFileTransport' => true,
         ],
         'log' => [
@@ -60,7 +59,12 @@ $config = [
             'site/request-password-reset',
             'site/reset-password',
             'site/login',
+            'site/index',
             'site/signup',
+            'site/logout',
+            'site/contact',
+            'site/captcha',
+            'site/about',
         ]
     ],
     'params' => $params,

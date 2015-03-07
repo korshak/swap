@@ -93,7 +93,19 @@ class SiteController extends Controller
 
     public function actionContact()
     {
-        $model = new ContactForm();
+        if (Yii::$app->user->isGuest) {
+            $model = new ContactForm();
+        } else {
+            /** @var app\models\tables\User $userIdentity */
+            $userIdentity = Yii::$app->user->identity;
+            $model = new ContactForm(
+                [
+                    'name' => $userIdentity->username,
+                    'email' => $userIdentity->email,
+                ]
+            );
+        }
+
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
                 Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
