@@ -2,12 +2,16 @@
 
 namespace app\controllers;
 
+use app\models\tables\ItemImage;
 use Yii;
 use app\models\tables\Item;
 use app\models\tables\ItemSearch;
+use yii\base\Exception;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\UploadedFile;
+use yii\helpers\Json;
 
 /**
  * ItemController implements the CRUD actions for Item model.
@@ -60,10 +64,16 @@ class ItemController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Item();
+        $userIdentity = Yii::$app->user->identity;
+
+        $model = new Item([
+            'created' => date('Y-m-d H:i:s'),
+            'updated' => date('Y-m-d H:i:s'),
+            'user_id' => $userIdentity->id,
+        ]);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['update', 'id' => $model->id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
@@ -80,10 +90,12 @@ class ItemController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $model->updated = date('Y-m-d H:i:s');
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
+
             return $this->render('update', [
                 'model' => $model,
             ]);
@@ -104,6 +116,48 @@ class ItemController extends Controller
     }
 
     /**
+     * @return bool
+     */
+    public function actionFileUpload()
+    {
+        $request = Yii::$app->request;
+
+        if (!$request->isAjax) {
+            return Json::encode(false);
+        }
+
+        $userId = Yii::$app->request->post('user_id');
+        $itemId = Yii::$app->request->post('item_id');
+
+        $model = Item::find()->andWhere(['user_id' => $userId, 'id' => $itemId])->one();
+
+        if ($model) {
+            $model->images = UploadedFile::getInstance($model, 'images');
+            if (!$model->images) {
+                return Json::encode(false);
+            }
+            if ($model->validate()) {
+                $src = $model->images->baseName . '.' . $model->images->extension;
+                $imageModel = new ItemImage([
+                    'item_id' => $itemId,
+                    'src' => $src
+                ]);
+                $dirName = Yii::$app->params['item.images'] . DIRECTORY_SEPARATOR
+                    . $userId . DIRECTORY_SEPARATOR . $itemId;
+
+                if (!is_dir($dirName)) {
+                    mkdir($dirName, 0777, true);
+                }
+                if ($model->images->saveAs($dirName . DIRECTORY_SEPARATOR . $src)) {
+                    $imageModel->save();
+                }
+            }
+        }
+
+        return Json::encode(true);
+    }
+
+    /**
      * Finds the Item model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
@@ -115,7 +169,7 @@ class ItemController extends Controller
         if (($model = Item::findOne($id)) !== null) {
             return $model;
         } else {
-            throw new NotFoundHttpException('The requested page does not exist.');
+            throw new NotFoundHttpException('The requested page does not exist . ');
         }
     }
 }

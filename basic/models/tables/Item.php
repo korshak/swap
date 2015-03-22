@@ -8,14 +8,19 @@ use Yii;
  * This is the model class for table "item".
  *
  * @property integer $id
+ * @property integer $user_id
  * @property string $name
  * @property string $price
  * @property string $description
+ * @property string $created
+ * @property string $updated
  *
  * @property ItemImage $id0
  */
 class Item extends \yii\db\ActiveRecord
 {
+    public $images;
+
     /**
      * @inheritdoc
      */
@@ -30,10 +35,11 @@ class Item extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'price', 'description'], 'required'],
+            [['name', 'price', 'description', 'user_id'], 'required'],
             [['price'], 'number'],
-            [['description'], 'string'],
-            [['name'], 'string', 'max' => 255]
+            [['description', 'created', 'updated'], 'string'],
+            [['name'], 'string', 'max' => 255],
+            [['images'], 'safe']
         ];
     }
 
@@ -55,6 +61,6 @@ class Item extends \yii\db\ActiveRecord
      */
     public function getImages()
     {
-        return $this->hasOne(ItemImage::className(), ['item_id' => 'id']);
+        return $this->hasMany(ItemImage::className(), ['item_id' => 'id']);
     }
 }
